@@ -13,8 +13,8 @@ using namespace std;
 
 const int width = 1280;
 const int height = 720;
-int samples = 200;
-int bounceLimit = 5;
+int samples = 100;
+int bounceLimit = 3;
 const int tileHeight = 16;
 const int tileWidth = 16;
 const int numPixels = width * height;
@@ -153,7 +153,7 @@ __device__ Color shade(const Ray& ray, Sphere& sphere, int bouncesRemaining, cur
 
     if (record.distance < maxDistance) {
         Ray newRay = Ray(record.position, record.normal.normalized() + randomInUnitSphere(state));
-        return record.hitMaterial.color + shade(newRay, sphere, bouncesRemaining--, state) * 0.5f;
+        return record.hitMaterial.color + shade(newRay, sphere, --bouncesRemaining, state) * 0.5f;
     }
 
     return Color(.68f, .85f, .9f);  // Background color
@@ -167,7 +167,7 @@ __global__ void render(Color* buffer, curandState* states, Camera camera, int sa
 
     Ray cameraRay = Ray(camera.origin, vec3((x-width/2)/static_cast<float>(width), (y-height/2)/ static_cast<float>(width), camera.zoom));
 
-    Sphere sphere = Sphere(vec3(0, .5f, 5.0f), 1.0f);  // To be changed to parameter
+    Sphere sphere = Sphere(vec3(0, 1.0f, 5.0f), 1.0f);  // To be changed to parameter
     sphere.material.color = Color(1, 1, 1);
 
     for (int s = 0; s < samples; s++) {
@@ -238,7 +238,7 @@ int main(void)
 
     randomInit <<<blocks, threads >>> (width, height, curandStates);
 
-    Camera camera = Camera(vec3(0, .5f, 0), 1.0f);
+    Camera camera = Camera(vec3(0, .75f, 0), 1.0f);
 
     cout << "Beginning render\n";
 
